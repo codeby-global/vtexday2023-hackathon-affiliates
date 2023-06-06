@@ -1,29 +1,47 @@
-import React, { FC } from 'react'
+import React, { useState } from 'react'
 import { Route } from 'vtex.my-account-commons/Router'
-import { ContentWrapper } from 'vtex.my-account-commons'
+import { Tabs, Tab, PageHeader} from 'vtex.styleguide'
+import AffiliateForm from './AffiliateForm'
 
 type MyAccountAffiliatePaymentPageProps = {
-  children: FC
   title?: string
   namespace?: string
 }
 const MyAccountAffiliatePaymentPage = ({
-  children,
-  title,
-  namespace = 'affiliates-payment',
+  title = 'Afiliado GetNet',
 }: MyAccountAffiliatePaymentPageProps) => {
+  const [initialState, setState] = useState({ currentTab: 1 })
   return (
     <Route
       exact
       path="/affiliates-payment"
       render={() => {
-        if (!title || title.trim().length === 0) {
-          return children
-        }
         return (
-          <ContentWrapper title={title} namespace={namespace}>
-            {() => children}
-          </ContentWrapper>
+          <>
+          <PageHeader title={title}/>
+          <div>
+            <Tabs fullWidth>
+              <Tab
+                label="Afiliado Vtex"
+                active={initialState.currentTab === 1}
+                onClick={() => setState({ currentTab: 1 })}>
+                <AffiliateForm/>
+              </Tab>
+              <Tab
+                label="Afiliado Getnet"
+                active={initialState.currentTab === 2}
+                onClick={() => setState({ currentTab: 2 })}>
+                <p>Content for the invoices.</p>
+              </Tab>
+              <Tab
+                label="Wallet"
+                active={initialState.currentTab === 3}
+                onClick={() => setState({ currentTab: 3 })}>
+                <p>Content for settings.</p>
+              </Tab>
+            </Tabs>
+          </div>
+          </>
         )
       }}
     />

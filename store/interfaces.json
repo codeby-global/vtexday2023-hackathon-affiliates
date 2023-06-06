@@ -4,8 +4,7 @@
   "store.affiliate-form": {
   },
   "my-account-page.affiliate-payment-page": {
-    "component": "MyAccountAffiliatePaymentPage",
-    "composition": "children"
+    "component": "MyAccountAffiliatePaymentPage"
   },
   "my-account-link.affiliate-payment-link": {
     "component": "MyAccountAffiliatePaymentLink"
