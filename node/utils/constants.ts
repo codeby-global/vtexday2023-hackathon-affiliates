@@ -4,7 +4,6 @@ export const APP_CUSTOM_DATA = {
   fields: ['affiliateId'],
   major: 0,
 }
-
 export const ERRORS = {
   missingAuthentication: {
     status: 401,
@@ -15,5 +14,4 @@ export const ERRORS = {
     message: 'Forbidden',
   },
 }
-
 export const SCROLL_PAGE_SIZE = 1000
