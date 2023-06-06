@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Route } from 'vtex.my-account-commons/Router'
 import { Tabs, Tab, PageHeader} from 'vtex.styleguide'
 import AffiliateForm from './AffiliateForm'
+import AffiliateFormGetNet from './AffiliateFormGetNet'
 import AffiliateProfileDetails from './AffiliateProfileDetails'
 
 type MyAccountAffiliatePaymentPageProps = {
@@ -32,7 +33,7 @@ const MyAccountAffiliatePaymentPage = ({
                 label="Afiliado Getnet"
                 active={initialState.currentTab === 2}
                 onClick={() => setState({ currentTab: 2 })}>
-                <p>Content for the invoices.</p>
+                <AffiliateFormGetNet/>
               </Tab>
               <Tab
                 label="Wallet"
