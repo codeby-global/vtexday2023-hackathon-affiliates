@@ -1,7 +1,7 @@
 {
   "name": "vtexday2023-hackathon-affiliates",
   "vendor": "vtexdayhackathon7",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "title": "Affiliates",
   "description": "App that adds support for affiliates on IO stores to be used on the VTEX Day 2023 Hackathon",
   "mustUpdateAt": "2018-01-04",
