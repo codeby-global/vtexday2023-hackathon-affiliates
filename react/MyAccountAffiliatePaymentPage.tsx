@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Route } from 'vtex.my-account-commons/Router'
 import { Tabs, Tab, PageHeader} from 'vtex.styleguide'
 import AffiliateForm from './AffiliateForm'
+import AffiliateProfileDetails from './AffiliateProfileDetails'
 
 type MyAccountAffiliatePaymentPageProps = {
   title?: string
@@ -37,7 +38,7 @@ const MyAccountAffiliatePaymentPage = ({
                 label="Wallet"
                 active={initialState.currentTab === 3}
                 onClick={() => setState({ currentTab: 3 })}>
-                <p>Content for settings.</p>
+                <AffiliateProfileDetails />
               </Tab>
             </Tabs>
           </div>
