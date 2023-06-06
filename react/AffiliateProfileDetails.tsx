@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
+import axios from 'axios'
 import { useQuery } from 'react-apollo'
 import { useCssHandles } from 'vtex.css-handles'
-import { Totalizer, IconArrowUp, IconArrowDown, IconShoppingCart, Table } from 'vtex.styleguide'
+import { Totalizer, IconArrowUp, IconShoppingCart, Table, DatePicker, Spinner, IconCheck } from 'vtex.styleguide'
 
 import GET_AFFILIATE_STORE_NAME_QUERY from './graphql/getAffiliateStoreName.graphql'
 import { getSlugStoreFront } from './utils/shared'
@@ -15,7 +16,18 @@ const CSS_HANDLES = [
   'affiliateProfileTitleContainer',
 ] as const
 
-function AffiliateProfileDetails() {
+function AffiliateProfileDetails(this: any) {
+  const [transactions, setTransactions] = useState([])
+
+  const [totalOrders, setTotalOrders] = useState(0)
+  const [totalIncome, setTotalIncome] = useState(0)
+  const [totalCommission, setTotalCommission] = useState(0)
+
+  const [loading, setLoading] = useState(false)
+
+  const [startDate, setStartDate] = useState(new Date(Date.now() - 28 * 24 * 60 * 60 * 1000 ))  // last 28 days
+  const [endDate, setEndDate] = useState(new Date())
+
   const slug = useMemo(() => {
     return getSlugStoreFront()
   }, [])
@@ -32,88 +44,153 @@ function AffiliateProfileDetails() {
 
   const defaultSchema = {
     properties: {
-      id: {
-        title: 'Id',
-        width: 300,
+      marketplace_transaction_id: {
+        title: 'ID',
+        width: 350,
       },
-      date: {
+      transaction_date: {
         title: 'Data',
-        minWidth: 350,
+        minWidth: 300,
+        cellRenderer: ({ cellData, loading }: any) => {
+          return (
+            loading ?
+              <span className="dib c-muted-1">
+                <Spinner color="currentColor" size={20} />
+              </span>
+            :
+            new Date(cellData).toLocaleString('pt-BR').split(',')[0]
+          )
+        }
       },
-      orderValue: {
-        title: 'Total pedido',
-        // default is 200px
+      card_payment_amount: {
+        title: 'Venda',
         minWidth: 100,
+        cellRenderer: ({ cellData, loading }: any) => {
+          return (
+            loading ?
+              <span className="dib c-muted-1">
+                <Spinner color="currentColor" size={20} />
+              </span>
+            :
+            new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cellData / 100)
+          )
+        }
       },
-      comissionValue: {
+      subseller_rate_percentage: {
         title: 'Comissão',
-        // default is 200px
         minWidth: 100,
-      },
-      status: {
-        title: 'status',
-        // default is 200px
-        minWidth: 100,
+        cellRenderer: ({ cellData, rowData, loading }: any) => {
+          return (
+            loading ?
+              <span className="dib c-muted-1">
+                <Spinner color="currentColor" size={20} />
+              </span>
+            :
+            new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(((rowData.card_payment_amount / 100) / 100) * cellData)
+          )
+        }
       },
     },
   }
 
-  const mockItems = [
-    {
-      id: "123",
-      date: "02/04/2000",
-      orderValue: 1234,
-      comissionValue: 12,
-      status: "invoiced"
-    },
-    {
-      id: "321",
-      date: "03/04/2000",
-      orderValue: 233,
-      comissionValue: 2,
-      status: "invoiced"
-    },
-  ]
+  const getTransactions = async () => {
+    setLoading(true)
 
-  // TODO
+    try {
+      const response = await axios.get(
+        `/_v/transactions?seller_id=585fa930-d7ba-4e61-b099-c641efcfda55&subseller_id=700108794&transaction_date_init=${startDate}&transaction_date_end=${endDate}`
+      )
+
+      setTransactions(response.data)
+
+      setTotalOrders(response.data.length)
+
+      const totalIncome = response.data.reduce(
+        (acc: any, curr: { card_payment_amount: any }) => acc + curr.card_payment_amount,
+        0
+      )
+
+      setTotalIncome(totalIncome)
+
+      const totalCommission = response.data.reduce(
+        (acc: any, curr: { card_payment_amount: any, subseller_rate_percentage: any }) => acc + ((curr.card_payment_amount / 100) * curr.subseller_rate_percentage),
+        0
+      )
+
+      setTotalCommission(totalCommission)
+    } catch (error) {
+      console.log(error)
+    }
+
+    setLoading(false)
+  }
+
+  useMemo(() => {
+    getTransactions()
+  }, [startDate, endDate])
 
   return (
-    <div
-      className={`f1 mw9 center mr-auto ml-auto my-3 ba br-0 bl-0 bt-0 b--light-gray ${handles.affiliateProfileTitleContainer} `}
-    >
-      <h4 className={`t-heading-4 ${handles.affiliateProfileTitle}`}>
-        Affiliate Store Name: {error ? '' : data?.getAffiliateStoreName} - TODO
-        <Totalizer horizontalLayout
-          items={[
-            {
-              label: 'Orders',
-              value: '566',
-              inverted: true,
-              iconBackgroundColor: '#eafce3',
-              icon: <IconArrowUp color="#79B03A" size={14} />,
-            },
-            {
-              label: 'Average Ticket',
-              value: 'US$ 55.47',
-              inverted: true,
-              iconBackgroundColor: '#cce8ff',
-              icon: <IconShoppingCart color="#368df7" size={14} />,
-            },
-            {
-              label: 'Gross',
-              value: 'US$ 554.70',
-              inverted: true,
-              iconBackgroundColor: '#fda4a4',
-              icon: <IconArrowDown color="#dd1616" size={14} />,
-            },
-          ]} />
+    <div>
+      <div className={`f1 mw9 center mr-auto ml-auto my-3 ${handles.affiliateProfileTitleContainer} `}>
+        <h4 className={`t-heading-4 ${handles.affiliateProfileTitle}`}>
+          Affiliate Store Name: {error ? '' : data?.getAffiliateStoreName}
+        </h4>
+      </div>
+
+      <Totalizer
+        items={[
+          {
+            label: 'Total de pedidos',
+            value: totalOrders,
+            iconBackgroundColor: '#cce8ff',
+            icon: <IconShoppingCart color="#368df7" size={14} />,
+          },
+          {
+            label: 'Total de vendas',
+            value: new Intl.NumberFormat('pt-BT', { style: 'currency', currency: 'BRL' }).format(totalIncome / 100),
+            iconBackgroundColor: '#eafce3',
+            icon: <IconArrowUp color="#79B03A" size={14} />,
+          },
+          {
+            label: 'Total de comissão',
+            value: new Intl.NumberFormat('pt-BT', { style: 'currency', currency: 'BRL' }).format(totalCommission / 100),
+            iconBackgroundColor: '#eafce3',
+            icon: <IconCheck size={14} />,
+          },
+        ]}
+      />
+
+      <div className="flex mv7">
+        <div className="mr3 ml-auto">
+          <DatePicker
+            label="Data de início"
+            value={startDate}
+            onChange={(date: React.SetStateAction<Date>) => setStartDate(date)}
+            locale="pt-BR"
+
+          />
+        </div>
+        <div className="ml3">
+          <DatePicker
+            label="Data de fim"
+            value={endDate}
+            onChange={(date: React.SetStateAction<Date>) => setEndDate(date)}
+            locale="pt-BR"
+          />
+        </div>
+      </div>
+
+      {loading ?
+        <span className="dib c-muted-1">
+          <Spinner color="currentColor" size={20} />
+        </span>
+      :
         <Table
           fullWidth={true}
           schema={defaultSchema}
-          items={mockItems}
-          density="high"
-         />
-      </h4>
+          items={transactions}
+          />
+      }
     </div>
   )
 }
