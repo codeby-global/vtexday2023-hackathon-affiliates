@@ -3,7 +3,7 @@ import { masterDataFor } from '@vtex/clients'
 import type {
   Affiliates,
   UserAffiliation,
-} from 'vtex.vtexday2023-hackathon-affiliates'
+} from 'vtexdayhackathon7.vtexday2023-hackathon-affiliates'
 
 import AuthenticationClient from './authenticationClient'
 import CheckoutExtended from './checkout'

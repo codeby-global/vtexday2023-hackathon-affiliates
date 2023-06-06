@@ -1,4 +1,4 @@
-import type { AffiliatesFilterInput } from 'vtex.vtexday2023-hackathon-affiliates'
+import type { AffiliatesFilterInput } from 'vtexdayhackathon7.vtexday2023-hackathon-affiliates'
 
 export const parseAffiliatesFilters = ({
   searchTerm,

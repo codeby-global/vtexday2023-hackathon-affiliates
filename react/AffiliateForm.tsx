@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 
 import ADD_AFFILIATE from './graphql/addAffiliate.graphql'
 import { useMutation } from 'react-apollo'
-import type { Affiliate } from 'vtex.vtexday2023-hackathon-affiliates'
+import type { Affiliate } from 'vtexdayhackathon7.vtexday2023-hackathon-affiliates'
 // import ADD_AFFILIATE from './graphql/addAffiliate.graphql'
 import { Input } from 'vtex.styleguide'
 type AffiliateFormProps = {

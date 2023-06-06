@@ -1,4 +1,4 @@
-import type { QueryGetAffiliatesArgs } from 'vtex.vtexday2023-hackathon-affiliates'
+import type { QueryGetAffiliatesArgs } from 'vtexdayhackathon7.vtexday2023-hackathon-affiliates'
 
 import { parseAffiliatesFilters } from '../utils/filters'
 import type { AffiliateInput } from '../typings/affiliates'

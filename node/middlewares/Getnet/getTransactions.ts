@@ -32,26 +32,20 @@ export async function getTransactions(
     }
 
     for (const transaction of get.list_transactions) {
-      const details = []
-      for (const detail of transaction.details) {
-        details.push({
-          payment_date: detail.payment_date,
-          subseller_rate_amount: detail.subseller_rate_amount,
-          subseller_rate_percentage: detail.subseller_rate_percentage,
-          number_installments: detail.number_installments,
-          installment: detail.installment,
-          installment_date: detail.installment_date,
-          installment_amount: detail.installment_amount
-        })
-      }
-
       list_transactions.push({
         order_id: transaction.summary.order_id,
         transaction_date: transaction.summary.transaction_date,
         confirmation_date: transaction.summary.confirmation_date,
         transaction_sign: transaction.summary.transaction_sign,
         card_payment_amount: transaction.summary.card_payment_amount,
-        details
+        payment_date: transaction.details[0].payment_date,
+        subseller_rate_amount: transaction.details[0].subseller_rate_amount,
+        subseller_rate_percentage: transaction.details[0].subseller_rate_percentage,
+        number_installments: transaction.details[0].number_installments,
+        installment: transaction.details[0].installment,
+        installment_date: transaction.details[0].installment_date,
+        installment_amount: transaction.details[0].installment_amount,
+        marketplace_transaction_id: transaction.details[0].marketplace_transaction_id,
       })
     }
 

@@ -1,7 +1,7 @@
 import type {
   Affiliates,
   MutationAddAffiliateArgs,
-} from 'vtex.vtexday2023-hackathon-affiliates'
+} from 'vtexdayhackathon7.vtexday2023-hackathon-affiliates'
 import CustomGraphQLError from '@vtex/api/lib/errors/customGraphQLError'
 
 import { findDocumentsByField, isSlugValid } from '../utils/shared'
