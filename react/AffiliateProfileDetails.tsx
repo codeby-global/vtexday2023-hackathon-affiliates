@@ -1,20 +1,9 @@
 import React, { useMemo, useState } from 'react'
 import axios from 'axios'
+import { useRenderSession } from 'vtex.session-client'
 import { useQuery } from 'react-apollo'
-import { useCssHandles } from 'vtex.css-handles'
+import GET_AFFILIATEBYEMAIL from './graphql/getAffiliateByEmail.graphql'
 import { Totalizer, IconArrowUp, IconShoppingCart, Table, DatePicker, Spinner, IconCheck } from 'vtex.styleguide'
-
-import GET_AFFILIATE_STORE_NAME_QUERY from './graphql/getAffiliateStoreName.graphql'
-import { getSlugStoreFront } from './utils/shared'
-
-type GetAffiliateStoreNameQueryResult = {
-  getAffiliateStoreName: string
-}
-
-const CSS_HANDLES = [
-  'affiliateProfileTitle',
-  'affiliateProfileTitleContainer',
-] as const
 
 function AffiliateProfileDetails(this: any) {
   const [transactions, setTransactions] = useState([])
@@ -23,24 +12,20 @@ function AffiliateProfileDetails(this: any) {
   const [totalIncome, setTotalIncome] = useState(0)
   const [totalCommission, setTotalCommission] = useState(0)
 
+  const [affiliateInfo, setAffiliateInfo] = useState(null) as any
+
   const [loading, setLoading] = useState(false)
 
-  const [startDate, setStartDate] = useState(new Date(Date.now() - 28 * 24 * 60 * 60 * 1000 ))  // last 28 days
+  const [startDate, setStartDate] = useState(new Date(Date.now() - 28 * 24 * 60 * 60 * 1000))  // last 28 days
   const [endDate, setEndDate] = useState(new Date())
 
-  const slug = useMemo(() => {
-    return getSlugStoreFront()
-  }, [])
+  const { session }: any = useRenderSession()
 
-  const { handles } = useCssHandles(CSS_HANDLES)
-
-  const { data, error } = useQuery<GetAffiliateStoreNameQueryResult>(
-    GET_AFFILIATE_STORE_NAME_QUERY,
-    {
-      variables: { slug },
-      skip: !slug,
-    }
-  )
+  const { data, loading: isLoading } = useQuery(GET_AFFILIATEBYEMAIL, {
+    variables: {
+      email: session?.namespaces?.profile?.email?.value,
+    },
+  })
 
   const defaultSchema = {
     properties: {
@@ -93,26 +78,48 @@ function AffiliateProfileDetails(this: any) {
     },
   }
 
-  const getTransactions = async () => {
+  const getAffiliateInfo = async (cpf: number) => {
+    try {
+      const { data } = await axios.get(
+        `/_v/subseller?merchant_id=54644529&cpf=${cpf}`
+      )
+
+      return data
+    } catch (error) {
+      console.log(error)
+
+      return null
+    }
+  }
+
+  const getTransactions = async (affiliateId: string) => {
     setLoading(true)
 
     try {
-      const response = await axios.get(
-        `/_v/transactions?seller_id=585fa930-d7ba-4e61-b099-c641efcfda55&subseller_id=700108794&transaction_date_init=${startDate}&transaction_date_end=${endDate}`
+      let getAffiliate
+
+      if (!affiliateInfo) {
+        getAffiliate = await getAffiliateInfo(Number(affiliateId.replace(/\D/g, '')))
+
+        setAffiliateInfo(getAffiliate)
+      }
+
+      const { data } = await axios.get(
+        `/_v/transactions?seller_id=585fa930-d7ba-4e61-b099-c641efcfda55&subseller_id=700108794&transaction_date_init=2023-05-09&transaction_date_end=2023-06-06`
       )
 
-      setTransactions(response.data)
+      setTransactions(data)
 
-      setTotalOrders(response.data.length)
+      setTotalOrders(data.length)
 
-      const totalIncome = response.data.reduce(
+      const totalIncome = data.reduce(
         (acc: any, curr: { card_payment_amount: any }) => acc + curr.card_payment_amount,
         0
       )
 
       setTotalIncome(totalIncome)
 
-      const totalCommission = response.data.reduce(
+      const totalCommission = data.reduce(
         (acc: any, curr: { card_payment_amount: any, subseller_rate_percentage: any }) => acc + ((curr.card_payment_amount / 100) * curr.subseller_rate_percentage),
         0
       )
@@ -126,17 +133,13 @@ function AffiliateProfileDetails(this: any) {
   }
 
   useMemo(() => {
-    getTransactions()
-  }, [startDate, endDate])
+    if (!isLoading && data.getAffiliateByEmail.document){
+      getTransactions(data.getAffiliateByEmail.document)
+    }
+  }, [data, startDate, endDate])
 
   return (
     <div>
-      <div className={`f1 mw9 center mr-auto ml-auto my-3 ${handles.affiliateProfileTitleContainer} `}>
-        <h4 className={`t-heading-4 ${handles.affiliateProfileTitle}`}>
-          Affiliate Store Name: {error ? '' : data?.getAffiliateStoreName}
-        </h4>
-      </div>
-
       <Totalizer
         items={[
           {
@@ -165,7 +168,7 @@ function AffiliateProfileDetails(this: any) {
           <DatePicker
             label="Data de início"
             value={startDate}
-            onChange={(date: React.SetStateAction<Date>) => setStartDate(date)}
+            onChange={(date: any) => setStartDate(date)}
             locale="pt-BR"
 
           />
@@ -174,7 +177,7 @@ function AffiliateProfileDetails(this: any) {
           <DatePicker
             label="Data de fim"
             value={endDate}
-            onChange={(date: React.SetStateAction<Date>) => setEndDate(date)}
+            onChange={(date: any) => setEndDate(date)}
             locale="pt-BR"
           />
         </div>

@@ -34,7 +34,7 @@ export default class Getnet extends ExternalClient {
 
   public async getToken(type: TokenType): Promise<any> {
     if (new Date(token[type].createdAt + token[type].expires_in) > new Date()) {
-      return token
+      return token[type]
     }
 
     const newToken = await this.generateToken(type)
@@ -133,7 +133,9 @@ export default class Getnet extends ExternalClient {
   public async updatePF(
     register: CreatePreSubSellerPF,
   ): Promise<any> {
-    const { access_token } = await this.getToken('backoffice')
+    const getTk = await this.getToken('backoffice')
+
+    const { access_token }  = getTk
 
     try {
       return await this.http.put(
